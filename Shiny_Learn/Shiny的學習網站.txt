@@ -1,0 +1,241 @@
+【R Documentation】
+【R cheatsheet】
+
+【Shiny的學習網站】
+各式各樣，亂七八糟
+
+[wufoo]
+https://littlefish0331.wufoo.com/build/
+帳號littlefish0331@gmail.com.
+密碼830315abc
+
+
+[shinyapps.io發布網站]
+https://www.shinyapps.io/
+帳號littlefish0331@gmail.com.
+密碼830315abc
+
+
+
+@[Shiny from Rstudio]
+http://shiny.rstudio.com/
+
+Gallery有超多超棒的模板!!!
+Article則有許多coding時會遇到的函式解說，以及程式運行的邏輯概念。
+Get Started下面有教學課程，教材分成video和written。
+
+
+
+[程式人雜誌--2013年9月-R 講題分享 – 利用 R 和 Shiny 製作網頁應用 (作者：Taiwan R User Group)]
+http://programmermagazine.github.io/201309/htm/article6.html#sidebarpanel
+
+非常基本的程式碼概念介紹，可以很快入門。
+沒有程式碼可以copy
+下面教學建立自己呈現shiny app的網站的，有些不能用了
+
+@小技巧(1)
+在server.R中插入browser()後，
+在runApp之後可以在執行相關事件時暫停在browser，
+開發者可以很方便的進行除錯。
+在server.R中插入程式的核心演算法、分析方法。
+
+@小技巧(2)
+請務必理解server.R的架構，
+並且將功能正確的分為靜態的部份和動態的部份，
+才能將程式碼放置在正確的位置。
+靜態的部份放置於shinyServer之前，
+動態的部份會放在reactive，或對應的renderXXX裡
+
+
+
+
+
+@[github上面的shiny tutorial]目前已經被訂為舊教材了，但是依舊可以看一下
+http://rstudio.github.io/shiny/tutorial/#
+
+This tutorial is deprecated. 
+Learn more about Shiny at our new location, shiny.rstudio.com.
+
+
+
+
+
+
+===========================
+【Example分享】
+以下都是從 https://www.showmeshiny.com/ 這個網站來的
+乾~超級多東西可以學習!!
+@[R GRAPH CATALOG]
+Leave a comment
+ggplot2 graphs, mostly from “Creating More Effective Graphs” by Naomi Robbins, with visual overview and ability to put graph and code side-by-side
+
+Author: Jenny Bryan and Joanna Zhao
+App: http://shinyapps.stat.ubc.ca/r-graph-catalog/
+Code: https://github.com/jennybc/r-graph-catalog
+Documentation: none
+
+
+@[ggtree樹狀圖，可以直/橫平行展開，或是圓形放射狀展開]
+https://bioconductor.org/packages/release/bioc/html/ggtree.html
+an R package for visualization and 
+annotation of phylogenetic trees 
+with their covariates and other associated data
+下面有一點點小教程，目前找不到好的教材
+
+
+
+
+===============================
+https://www.youtube.com/watch?v=TcMao3r6jYY
+
+
+https://molecular-service-science.com/2015/08/01/r-shiny-business-intelligence-tutorial/
+https://molecular-service-science.com/2015/02/16/your-first-r-shiny-app-deployment/
+
+http://blog.infographics.tw/2016/04/interactive-r-with-shiny/
+http://rstudio.github.io/shiny/tutorial/#shiny-text
+
+
+
+
+
+
+ui<-navbarPage('中油',
+               tabPanel('Option1', #點擊後直接切換
+                        h1('加油站位置'),
+                        #sliderInput("slider1", label = "Slider", min = 3, max = 10, value = 7),
+                        leafletOutput("map") ##plotOutput 叫出output圖
+               ), 
+               navbarMenu('Option2', #允許按鈕中出現子選項的 navbarMenu
+                          tabPanel('Option2-1'), #子選單的按鈕元件
+                          tabPanel('Option2-2'),
+                          tabPanel('Option2-3'))
+)
+server<-function(input, output) {
+  output$map <- renderLeaflet({
+    leaflet() %>%
+      addTiles(
+        urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png",
+        attribution = 'Maps by <a href="http://www.mapbox.com/">Mapbox</a>'
+      ) %>%
+      setView(lng = 121.55, lat = 25.036255, zoom = 12)
+  })
+  leafletProxy("map", data = output2) %>%
+    clearShapes() %>%
+    addCircleMarkers(~經度, ~緯度,radius=~交易次數*3,popup=~站名)
+    #addCircles(~經度, ~緯度,radius=~交易次數*3)#, radius=radius, layerId=~zipcode,
+               #stroke=FALSE, fillOpacity=0.4, fillColor=pal(colorData)) %>%
+    #addLegend("bottomleft", pal=pal, values=colorData, title=colorBy,
+              #layerId="colorLegend")
+}
+shinyApp(ui = ui, server = server)
+
+
+
+pou <- paste0("站名：", output2$站名,"<br>過去十分鐘車流量：", output2$交易次數, "<br>擁擠程度：", output2$擁擠程度)
+
+gen.low <- 110
+gen.high <- 375
+
+Xmap <- cbind(Xmap, ggrade = 0)
+Xmap[is.na(Xmap$gmean),"gmean"] <- -1
+Xmap[which(Xmap$gmean >= 0),"ggrade"] %<>% `+`(1)
+Xmap[which(Xmap$gmean > gen.low),"ggrade"] %<>% `+`(1)
+Xmap[which(Xmap$gmean > gen.high),"ggrade"] %<>% `+`(1)
+
+
+紅
+橘
+綠
+#d7191c
+#fdae61
+#a6d96a
+
+getColor <- function(data) {
+  sapply(data$grade, function(grade) {
+    if( grade== "3") {
+      "#d7191c"
+    } else if(grade == "2") {
+      "#fdae61"
+    } else {
+      "#a6d96a"
+    } })
+}
+
+output2 <- cbind(output2 , grade =1)
+output2[which(output2$交易次數>0),"grade"] %<>% `+`(1)
+output2[which(output2$交易次數>1),"grade"] %<>% `+`(1)
+
+
+
+
+
+
+
+
+
+
+
+
+
+det_time <- function(time){
+time <- strptime(time, "%Y-%m-%d %H:%M") #eg 2017-12-04 08:09
+simulation$加油日期%<>%as.character()
+simulation$記錄時間點 %<>% as.character() 
+
+x.dates<-simulation$加油日期
+x.times<-simulation$記錄時間點
+x.datetime <- paste(x.dates, x.times)
+simulation$time<- strptime(x.datetime, "%Y/%m/%d %H:%M")
+
+output <- simulation[difftime(time, simulation$記錄時間, units="mins")<10 &
+             difftime(time, simulation$記錄時間, units="mins")>0,] %>% 
+             dplyr::select(站名) %>% table() %>%  as.data.frame() 
+colnames(output) <- c("站名","交易次數")
+output2 <- merge(output, unique(simulation[,c("經度","緯度","站名")]),by="站名", all.x=T)
+return(output2)
+}
+
+
+server<-function(input, output) {
+  output$map <- renderLeaflet({
+    leaflet() %>%
+      addTiles(
+        urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png",
+        attribution = 'Maps by <a href="http://www.mapbox.com/">Mapbox</a>'
+      ) %>%
+      setView(lng = 121.55, lat = 25.036255, zoom = 12)
+  })
+  
+  output2 <- cbind(output2 , grade =1)
+  output2[which(output2$交易次數>0),"grade"] %<>% `+`(1)
+  output2[which(output2$交易次數>1),"grade"] %<>% `+`(1)
+  
+  getColor <- function(data) {
+    sapply(data$grade, function(grade) {
+      if( grade== "3") {
+        "#d7191c"
+      } else if(grade == "2") {
+        "#fdae61"
+      } else {
+        "#a6d96a"
+      } })
+  }
+  
+  leafletProxy("map", data = output2) %>%
+    clearShapes() %>%
+    addCircleMarkers(~經度, ~緯度,color=getColor(output2),fillColor=getColor(output2), opacity=1, fillOpacity=1,radius=3,
+                     popup=paste0("站名：", output2$站名,"<br>過去十分鐘車流量：", output2$交易次數, "<br>擁擠程度："))
+  
+}
+shinyApp(ui = ui, server = server)
+
+
+
+
+
+
+
+
+
+
